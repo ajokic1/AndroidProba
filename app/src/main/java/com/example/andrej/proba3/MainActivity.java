@@ -1,5 +1,7 @@
 package com.example.andrej.proba3;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -13,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -20,6 +23,29 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    static Post post;
+    List<Post> postovip = null;
+    ArrayAdapter<Post> adapter1p = null;
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+        switch(requestCode) {
+            case (1) : {
+                if (resultCode == Activity.RESULT_OK) {
+                    post = new Post(
+                            intent.getStringExtra(editPost.IME),
+                            intent.getStringExtra(editPost.FAKULTET),
+                            R.drawable.froot,
+                            intent.getStringExtra(editPost.TEKST));
+                    postovip.add(post);
+                    adapter1p.notifyDataSetChanged();
+
+
+                }
+                break;
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,36 +60,44 @@ public class MainActivity extends AppCompatActivity {
         final ListView msgList = (ListView)findViewById(R.id.msgList);
 
 
-
-
-        final List<ChatMessage> messages = new LinkedList<>();
-        final ArrayAdapter<ChatMessage> adapter = new ArrayAdapter<ChatMessage>(
-                this, android.R.layout.two_line_list_item, messages
+        //Nova lista
+        final List<Post> postovi = new LinkedList<>();
+        final ArrayAdapter<Post> adapter1 = new ArrayAdapter<Post>(
+                this, R.layout.post_layout, postovi
         ){
             @NonNull
             @Override
             public View getView(int position, View view, ViewGroup parent) {
                 if(view==null){
-                    view=getLayoutInflater().inflate(android.R.layout.two_line_list_item,parent,false);
+                    view=getLayoutInflater().inflate(R.layout.post_layout,parent,false);
                 }
-                ChatMessage chat = messages.get(position);
-                ((TextView)view.findViewById(android.R.id.text1)).setText(chat.getName());
-                ((TextView)view.findViewById(android.R.id.text2)).setText(chat.getMessage());
+                Post post = postovi.get(position);
+                ((ImageView)view.findViewById(R.id.postImage)).setImageResource(R.drawable.froot);
+                ((TextView)view.findViewById(R.id.postName)).setText(post.getIme());
+                ((TextView)view.findViewById(R.id.postDesc)).setText(post.getFakultet());
+                ((TextView)view.findViewById(R.id.postText)).setText(post.getTekst());
                 return view;
             }
         };
-        msgList.setAdapter(adapter);
+        msgList.setAdapter(adapter1);
+        postovip=postovi;adapter1p=adapter1; //reference na postovi i adapter za outside
 
-        sendBtn.setOnClickListener(new View.OnClickListener() {
+        //Floating action button
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                ChatMessage chat = new ChatMessage("andy", msgText.getText().toString());
-                msgText.setText("");
-                messages.add(chat);
-                adapter.notifyDataSetChanged();
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, editPost.class);
+                startActivityForResult(intent,1);
 
             }
         });
+
+
+
+
+
+
 
 
     }
